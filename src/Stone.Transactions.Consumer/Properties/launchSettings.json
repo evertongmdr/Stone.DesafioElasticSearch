@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Stone.Transactions.Consumer": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

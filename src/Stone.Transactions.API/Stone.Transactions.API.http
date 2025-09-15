@@ -1,0 +1,6 @@
+@Stone.Transactions.API_HostAddress = http://localhost:5087
+
+GET {{Stone.Transactions.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
