@@ -3,14 +3,18 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Stone.Common.Infrastructure.SearchEngine;
 using Stone.Transactions.Consumer.Consumers;
 using Stone.Transactions.Consumer.Extensions;
+using Stone.Transactions.Domain.Entities;
 
 await Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
     {
 
         services.Configure<AppTransactionsConsumerSettings>(context.Configuration);
+
+        services.AddSingleton(typeof(IElasticService<>), typeof(ElasticService<>));
 
         var containerInstance = Environment.GetEnvironmentVariable("CONTAINER_INSTANCE");
 
