@@ -1,7 +1,12 @@
 {
   "profiles": {
-    "Stone.Transactions.Consumer": {
-      "commandName": "Project"
+
+    "Development": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "CONTAINER_INSTANCE": "container-1"
+      }
     },
     "Container (Dockerfile)": {
       "commandName": "Docker"

@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Stone.Transactions.Domain.Entities;
 using Stone.Transactions.Producer.Extensions;
-using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 
@@ -18,7 +17,7 @@ namespace Stone.Transactions.Producer.Producers
     {
         private readonly ILogger<TransactionProducer> _logger;
         private readonly AppTransactionsProducerSettings _settings;
-        private readonly IProducer<string, byte[]> _producer;
+        private readonly IProducer<string, string> _producer;
 
         public TransactionProducer(ILogger<TransactionProducer> logger, IOptions<AppTransactionsProducerSettings> settings)
         {
@@ -28,12 +27,16 @@ namespace Stone.Transactions.Producer.Producers
             var config = new ProducerConfig
             {
                 BootstrapServers = _settings.Kafka.BootstrapServers,
+                ClientId = "transaction-producer-app-01",
+                TransactionalId = $"transaction-producer-01",
                 EnableIdempotence = true,
                 Acks = Acks.All,
-                TransactionalId = $"transaction-producer-{Guid.NewGuid()}"
+                LingerMs = 10,
+                MessageSendMaxRetries = 3,
+                CompressionType = CompressionType.Lz4,
             };
 
-            _producer = new ProducerBuilder<string, byte[]>(config).Build();
+            _producer = new ProducerBuilder<string, string>(config).Build();
             _producer.InitTransactions(TimeSpan.FromSeconds(10));
         }
 
@@ -48,13 +51,13 @@ namespace Stone.Transactions.Producer.Producers
                     MaxDegreeOfParallelism = 6,
                     CancellationToken = cancellationToken
                 },
+
                 async (messages, ct) =>
                 {
 
-                    var message = new Message<string, byte[]>
+                    var message = new Message<string, string>
                     {
-                        Key = Guid.NewGuid().ToString(),
-                        Value = CompressData(messages),
+                        Value = JsonSerializer.Serialize(messages),
                         Headers = CreateHeaders()
                     };
 
@@ -72,18 +75,6 @@ namespace Stone.Transactions.Producer.Producers
 
                 throw;
             }
-        }
-
-
-        private static byte[] CompressData<T>(T data)
-        {
-            var serializedBytes = JsonSerializer.SerializeToUtf8Bytes(data);
-            using var memoryStream = new MemoryStream();
-            using (var zipStream = new GZipStream(memoryStream, CompressionMode.Compress, leaveOpen: true))
-            {
-                zipStream.Write(serializedBytes, 0, serializedBytes.Length);
-            }
-            return memoryStream.ToArray();
         }
 
         private Headers CreateHeaders()

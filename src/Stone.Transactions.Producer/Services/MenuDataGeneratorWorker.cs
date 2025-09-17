@@ -26,7 +26,7 @@ namespace Stone.Transactions.Producer.Services
 
             var options = new Dictionary<string, (int batchSize, int maxBatchesPerSend, int delayMs)>
             {
-                { "1", (5000, 100, 500) },    // Alta carga (500k msgs por transação)
+                { "1", (4000, 100, 500) },    // Alta carga (400k msgs por transação)
                 { "2", (1000, 50, 250) },     // Média carga (50k msgs por transação)
                 { "3", (100, 10, 200) }       // Baixa carga (1k msgs por transação)
             };
@@ -44,7 +44,7 @@ namespace Stone.Transactions.Producer.Services
                         using var scope = _serviceProvider.CreateScope();
                         var transactionDataGenerator = scope.ServiceProvider.GetRequiredService<ITransactionDataGenerator>();
 
-                        await transactionDataGenerator.GenerateAndPublishDataAsync(option.batchSize,option.maxBatchesPerSend, option.delayMs);
+                        await transactionDataGenerator.GenerateAndPublishDataAsync(option.batchSize, option.maxBatchesPerSend, option.delayMs);
                     }
                     else
                     {
@@ -80,7 +80,7 @@ namespace Stone.Transactions.Producer.Services
             Console.WriteLine("Escolha o cenário de estresse:\n");
 
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("1 - Cenário de Alta Carga (Throughput Alto): Envio rápido de 500.000 mensagens por transação, simulando carga máxima e testes de escalabilidade.");
+            Console.WriteLine("1 - Cenário de Alta Carga (Throughput Alto): Envio rápido de 400.000 mensagens por transação, simulando carga máxima e testes de escalabilidade.");
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("2 - Cenário de Carga Média (Throughput Médio): Envio de 50.000 mensagens por transação, simulando condições normais de operação.");
             Console.ForegroundColor = ConsoleColor.Red;
