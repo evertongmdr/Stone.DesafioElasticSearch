@@ -1,9 +1,14 @@
-﻿namespace Stone.Transactions.Consumer.Extensions
+﻿using Stone.Common.Infrastructure.SearchEngine;
+
+namespace Stone.Transactions.Consumer.Extensions
 {
     public class AppTransactionsConsumerSettings
     {
         public KafkaSettings Kafka { get; set; }
+        public SearchEngineSettings SearchEngine { get; set; }
         public List<ContainerSettings> Containers { get; set; }
+
+
     }
 
     public class KafkaSettings

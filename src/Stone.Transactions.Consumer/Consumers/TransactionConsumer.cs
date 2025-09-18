@@ -15,19 +15,19 @@ namespace Stone.Transactions.Consumer.Consumers
 {
     public class TransactionConsumer : BackgroundService
     {
-        private const int NumberChannels = 20;       // Channels paralelos
+        private const int NumberChannels = 20;       // Channels paralelos. pode ajustar conforme necessário, Via app, estratégia adaptativa, etc
 
         private readonly ILogger<TransactionConsumer> _logger;
         private readonly AppTransactionsConsumerSettings _settings;
         private readonly IConsumer<string, string> _consumer;
-        private readonly IElasticService<Transaction> _elasticService;
+        private readonly ISearchEngine<Transaction> _elasticSearchService;
         private readonly Channel<ConsumeBatch<Transaction>> _channel;
 
 
         public TransactionConsumer(
-            ILogger<TransactionConsumer> logger,
             IOptions<AppTransactionsConsumerSettings> settings,
-            IElasticService<Transaction> elasticService,
+            ILogger<TransactionConsumer> logger,
+            ISearchEngine<Transaction> elasticSearchService,
             string containerInstance,
             string consumerName)
         {
@@ -49,17 +49,14 @@ namespace Stone.Transactions.Consumer.Consumers
 
             _consumer = new ConsumerBuilder<string, string>(config).Build();
 
-            _elasticService = elasticService;
+            _elasticSearchService = elasticSearchService;
 
-            //Hack: nao é muito e se for 400K mensagens por 500ms?
             _channel = Channel.CreateBounded<ConsumeBatch<Transaction>>(new BoundedChannelOptions(20)
             {
                 FullMode = BoundedChannelFullMode.Wait // bloqueia se estiver cheio
             });
 
         }
-
-        //TODO: implementar uma DQL. mensagens que falharem várias vezes vão para a DQL
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -125,7 +122,7 @@ namespace Stone.Transactions.Consumer.Consumers
                 _logger.LogInformation("Consumer finalizado");
             }
         }
-       
+
         private async Task ProcessAndPersistBatchesToElasticAsync(CancellationToken cancellationToken)
         {
             await foreach (var batch in _channel.Reader.ReadAllAsync(cancellationToken))
@@ -137,8 +134,9 @@ namespace Stone.Transactions.Consumer.Consumers
 
                     var resultRetry = await retryElastic.ExecuteAndCaptureAsync(async () =>
                     {
-                        await _elasticService.BulkInsertAsync(
+                        await _elasticSearchService.BulkInsertAsync(
                             batch.Items,
+                            "transactions",
                             bulkSize: 5000,
                             cancellationToken
                         );

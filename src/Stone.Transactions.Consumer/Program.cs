@@ -14,11 +14,12 @@ await Host.CreateDefaultBuilder(args)
 
         services.Configure<AppTransactionsConsumerSettings>(context.Configuration);
 
-        services.AddSingleton(typeof(IElasticService<>), typeof(ElasticService<>));
 
         var containerInstance = Environment.GetEnvironmentVariable("CONTAINER_INSTANCE");
 
         var settings = context.Configuration.Get<AppTransactionsConsumerSettings>();
+
+        services.AddElasticSearch(settings.SearchEngine);
 
         var containerConfig = settings.Containers.Find(c => c.Name == containerInstance);
 
@@ -27,8 +28,9 @@ await Host.CreateDefaultBuilder(args)
             var consumerName = containerConfig.ConsumerNames[i];
 
             services.AddHostedService(sp => new TransactionConsumer(
-                sp.GetRequiredService<ILogger<TransactionConsumer>>(),
                 sp.GetRequiredService<IOptions<AppTransactionsConsumerSettings>>(),
+                sp.GetRequiredService<ILogger<TransactionConsumer>>(),
+                sp.GetRequiredService<ISearchEngine<Transaction>>(),
                 containerConfig.Name,
                 consumerName));
 
