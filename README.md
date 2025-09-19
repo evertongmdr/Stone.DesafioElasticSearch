@@ -72,6 +72,9 @@ No caso:
       - Cada partição do tópico é atribuída a apenas um consumidor dentro do grupo.
       - Se houver mais consumidores que partições, alguns consumidores ficarão ociosos.
       - Se houver menos consumidores que partições, alguns consumidores processarão múltiplas partições.
+ 
+Poder analisar melhor através do [diagrama da arquitetura](#diagrama-arquitetura).
+
    
 ##### Detalhes Consumer
 
