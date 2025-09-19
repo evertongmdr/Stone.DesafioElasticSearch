@@ -141,13 +141,28 @@ A política ILM `transactions_index_policy` organiza os dados conforme a frequê
 | **C3 – Raramente acessados** | Consultas acima de 30 dias | Cold (>30 dias) | Índices congelados (`freeze`). Alocados em nós cold para reduzir custo. |
 | **C4 – Dados expirados** | Retenção >12 meses | Delete (>12 meses) | Índices excluídos automaticamente. |
 
-💡 Observações:
+Observações:
 - Percentuais de consultas ajudam a decidir em qual fase os dados permanecem.  
 - A política garante **otimização de escrita/leitura**, **economia de recursos** e **retenção de 12 meses**.
 
+## Infraestrutura
 
-## Tecnologias Usadas
-- **.NET** 
-- **Kafka**
-- **ElasticSearch**
-- **Docker**
+### Kafka Cluster
+- **Número de nós:** 2  
+- **Objetivo:** Garantir alta disponibilidade e load balancing entre produtores e consumidores.  
+- **Configuração resumida:**  
+  - Cluster com múltiplos brokers.  
+  - Cada tópico pode ter múltiplas partições para paralelismo.  
+  - Grupo de consumidores garante divisão de partições e processamento paralelo.  
+
+### Elasticsearch Cluster
+- **Número de nós:** 2 (`elasticsearch-node-1` e `elasticsearch-node-2`)  
+- **Objetivo:** Alta disponibilidade, replicação e tolerância a falhas.  
+- **Configuração resumida:**  
+  - Cluster name: `elasticsearch-cluster`  
+  - Nó 1 expõe porta 9200, Nó 2 expõe porta 9201.  
+  - Política ILM aplicada (`transactions_index_policy`) com fases **Hot → Warm → Cold → Delete**.  
+  - Indexação, shardeamento e replicação configurados para suportar consultas frequentes e retenção de 12 meses.  
+
+**Observação:**  
+- O Kafka e Elasticsearch estão configurados para suportar múltiplas instâncias do Consumer e do Producer, permitindo **escala horizontal** do processamento e das consultas.
