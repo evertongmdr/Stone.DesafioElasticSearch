@@ -141,9 +141,15 @@ A política ILM `transactions_index_policy` organiza os dados conforme a frequê
 | **C3 – Raramente acessados** | Consultas acima de 30 dias | Cold (>30 dias) | Índices congelados (`freeze`). Alocados em nós cold para reduzir custo. |
 | **C4 – Dados expirados** | Retenção >12 meses | Delete (>12 meses) | Índices excluídos automaticamente. |
 
+### Índices Elasticsearch
+- **transactions-write**: índice de **escrita**, usado pelo Consumer para inserir novos dados.  
+- **transactions-read**: índice de **leitura**, usado pela API para consultas e agregações.
+
 Observações:
 - Percentuais de consultas ajudam a decidir em qual fase os dados permanecem.  
 - A política garante **otimização de escrita/leitura**, **economia de recursos** e **retenção de 12 meses**.
+- Os índices `transactions-write` e `transactions-read` seguem a política ILM **transactions_index_policy**, aplicando automaticamente as fases Hot, Warm, Cold e Delete.
+
 
 ## Infraestrutura
 
