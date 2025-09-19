@@ -1,22 +1,21 @@
 ﻿using Elastic.Clients.Elasticsearch;
 using Elastic.Clients.Elasticsearch.Core.Bulk;
 using Elastic.Transport;
+using Microsoft.AspNetCore.ResponseCompression;
 using Polly;
 
 namespace Stone.Common.Infrastructure.SearchEngine
 {
-    // TODO avaliar os nome depois
     public class ElasticSearchService<T> : ISearchEngine<T> where T : class
     {
-        private ElasticsearchClient _client;
+        private const int BulkSize = 5000;
+        protected ElasticsearchClient _client;
         private readonly SearchEngineSettings _settings;
 
-        private readonly int _bulkSize;
 
-        public ElasticSearchService(SearchEngineSettings settings, int bulkSize = 5000)
+        public ElasticSearchService(SearchEngineSettings settings)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            _bulkSize = bulkSize;
 
             ConnectWithRetry();
         }
@@ -36,7 +35,7 @@ namespace Stone.Common.Infrastructure.SearchEngine
         {
             EnsureConnected();
 
-            int chunkSize = bulkSize ?? _bulkSize;
+            int chunkSize = bulkSize ?? BulkSize;
 
             foreach (var chunk in items.Chunk(chunkSize))
             {
@@ -51,15 +50,32 @@ namespace Stone.Common.Infrastructure.SearchEngine
                 var response = await _client.BulkAsync(bulkRequest, cancellationToken);
 
                 if (response.Errors)
-                    throw new Exception($"Bulk insert falhou: {response.Items.FirstOrDefault()?.Error?.Reason}");
+                    throw new InvalidOperationException($"Bulk insert falhou: {response.Items.FirstOrDefault()?.Error?.Reason}");
             }
         }
 
-
-        //TODO: porque o ToLower?
-        public async Task IndexAsync(T item, CancellationToken cancellationToken = default)
+        public async Task<List<T>> SearchSafeAsync(SearchRequest searchRequest)
         {
-            await _client.IndexAsync(item, idx => idx.Index(typeof(T).Name.ToLower()), cancellationToken);
+            EnsureConnected();
+
+            try
+            {
+                var response = await _client.SearchAsync<T>(searchRequest);
+
+                if (!response.IsValidResponse || response.ElasticsearchServerError != null)
+                {
+
+                    throw new InvalidOperationException(
+                        $"Erro ao buscar dados no Elasticsearch: {response.ElasticsearchServerError?.Error?.Reason ?? "Erro Desconhecido"}");
+                }
+
+                return response.Documents.ToList();
+            }
+            catch (Exception e)
+            {
+
+                throw new InvalidOperationException("Erro inesperado ao executar a busca no Elasticsearch.", e);
+            }
         }
 
         private void EnsureConnected()
@@ -83,7 +99,7 @@ namespace Stone.Common.Infrastructure.SearchEngine
 
                 policy.Execute(() =>
                 {
-                    var clientSettings = new ElasticsearchClientSettings(new Uri(_settings.Uri));
+                    var clientSettings = new ElasticsearchClientSettings(new Uri(_settings.Uri)).DisableDirectStreaming();
 
                     if (!string.IsNullOrEmpty(_settings.Username) && !string.IsNullOrEmpty(_settings.Password))
                         clientSettings = clientSettings.Authentication(

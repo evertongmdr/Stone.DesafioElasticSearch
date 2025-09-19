@@ -75,7 +75,7 @@ namespace Stone.Transactions.Producer.Services
             return new Transaction
             {
                 Id = Guid.NewGuid(),
-                Type = (TransactionType)types.GetValue(random.Next(types.Length)),
+                Type = types.GetValue(random.Next(types.Length)).ToString(),
                 CreatedAt = DateTime.UtcNow.AddDays(-random.Next(0, 365)),
                 ClientId = clientIds[random.Next(clientIds.Count)],
                 PayerId = Guid.NewGuid(),

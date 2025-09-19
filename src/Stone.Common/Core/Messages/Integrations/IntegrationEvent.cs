@@ -1,4 +1,4 @@
-﻿namespace Stone.Common.Messages.Integrations
+﻿namespace Stone.Common.Core.Messages.Integrations
 {
     public abstract class IntegrationEvent
     {

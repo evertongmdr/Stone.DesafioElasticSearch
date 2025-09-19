@@ -3,9 +3,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
+using Stone.Common.Core.Messages;
 using Stone.Common.Extensions;
 using Stone.Common.Infrastructure.SearchEngine;
-using Stone.Common.Messages;
 using Stone.Transactions.Consumer.Extensions;
 using Stone.Transactions.Domain.Entities;
 using System.Text.Json;
@@ -136,7 +136,7 @@ namespace Stone.Transactions.Consumer.Consumers
                     {
                         await _elasticSearchService.BulkInsertAsync(
                             batch.Items,
-                            "transactions",
+                            "transactions-write",
                             bulkSize: 5000,
                             cancellationToken
                         );

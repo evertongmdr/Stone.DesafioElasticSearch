@@ -1,6 +1,4 @@
-﻿using Elastic.Clients.Elasticsearch;
-using Elastic.Transport;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace Stone.Common.Infrastructure.SearchEngine
 {

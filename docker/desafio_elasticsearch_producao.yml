@@ -1,20 +1,63 @@
 version: '3.4'
 
 services:
+
+  elasticsearch-node-1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: elasticsearch-node1
+    environment:
+      - node.name=elasticsearch-node-1
+      - cluster.name=elasticsearch-cluster
+      - discovery.seed_hosts=elasticsearch-node-2
+      - cluster.initial_master_nodes=elasticsearch-node-1,elasticsearch-node-2
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - elasticsearch1_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+
+  elasticsearch-node-2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: elasticsearch-node2
+    environment:
+      - node.name=elasticsearch-node-2
+      - cluster.name=elasticsearch-cluster
+      - discovery.seed_hosts=elasticsearch-node-1
+      - cluster.initial_master_nodes=elasticsearch-node-1,elasticsearch-node-2
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - elasticsearch2_data:/usr/share/elasticsearch/data
+    ports:
+      - "9201:9200"
+    depends_on:
+      - elasticsearch-node-1
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.0
+    container_name: kibana
+    depends_on:
+      - elasticsearch-node-1
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch-node-1:9200
+    ports:
+      - "5601:5601"
+
   zookeeper:
     image: zookeeper:3.8
     container_name: zookeeper
-    hostname: zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
     ports:
       - "2181:2181"
+    depends_on:
+      - elasticsearch-node-1
 
   kafka-broker-1:
     image: confluentinc/cp-kafka:7.1.0
     container_name: kafka-desafio-elasticserach1
     depends_on:
       - zookeeper
+      - elasticsearch-node-1
     ports:
       - "9094:9094"
     environment:
@@ -32,6 +75,7 @@ services:
     container_name: kafka-desafio-elasticserach2
     depends_on:
       - zookeeper
+      - elasticsearch-node-1
     ports:
       - "9095:9095"
     environment:
@@ -44,26 +88,6 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    ports:
-      - "9200:9200"
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.15.0
-    container_name: kibana
-    depends_on:
-      - elasticsearch
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    ports:
-      - "5601:5601"
-
 volumes:
-  elasticsearch_data:
+  elasticsearch1_data:
+  elasticsearch2_data:

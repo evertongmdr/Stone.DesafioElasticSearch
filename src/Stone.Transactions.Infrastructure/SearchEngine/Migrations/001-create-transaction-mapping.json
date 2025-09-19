@@ -1,0 +1,15 @@
+{
+  "mappings": {
+    "properties": {
+      "clientId": { "type": "keyword" },
+      "payerId": { "type": "keyword" },
+      "id": { "type": "keyword" },
+      "type": { "type": "keyword" },
+      "createdAt": { "type": "date" },
+      "amount": {
+        "type": "scaled_float",
+        "scaling_factor": 1000
+      }
+    }
+  }
+}

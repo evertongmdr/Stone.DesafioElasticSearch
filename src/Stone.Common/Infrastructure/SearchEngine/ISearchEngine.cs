@@ -1,4 +1,6 @@
-﻿namespace Stone.Common.Infrastructure.SearchEngine
+﻿using Elastic.Clients.Elasticsearch;
+
+namespace Stone.Common.Infrastructure.SearchEngine
 {
     public interface ISearchEngine<T> where T : class
     {
@@ -16,6 +18,7 @@
 
         Task BulkInsertAsync(IEnumerable<T> items, string indexName, int? bulkSize, CancellationToken cancellationToken);
 
-        Task IndexAsync(T item, CancellationToken cancellationToken = default);
+        Task<List<T>> SearchSafeAsync(SearchRequest searchRequest);
+
     }
 }

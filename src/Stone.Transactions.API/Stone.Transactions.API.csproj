@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -9,8 +9,14 @@
     <DockerfileContext>..\..</DockerfileContext>
   </PropertyGroup>
 
+	<ItemGroup>
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />
+	</ItemGroup>
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
+    <ProjectReference Include="..\Stone.Common\Stone.Common.csproj" />
+    <ProjectReference Include="..\Stone.Transactions.Application\Stone.Transactions.Application.csproj" />
+    <ProjectReference Include="..\Stone.Transactions.Infrastructure\Stone.Transactions.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

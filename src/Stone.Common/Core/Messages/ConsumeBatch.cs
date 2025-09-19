@@ -1,4 +1,4 @@
-﻿namespace Stone.Common.Messages
+﻿namespace Stone.Common.Core.Messages
 {
     using Confluent.Kafka;
 

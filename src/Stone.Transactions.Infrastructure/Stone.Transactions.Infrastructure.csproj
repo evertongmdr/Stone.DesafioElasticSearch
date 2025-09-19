@@ -7,11 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Stone.Common\Stone.Common.csproj" />
+    <Folder Include="Data\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\Repositories\" />
+    <ProjectReference Include="..\Stone.Common\Stone.Common.csproj" />
+    <ProjectReference Include="..\Stone.Transactions.Domain\Stone.Transactions.Domain.csproj" />
   </ItemGroup>
 
 </Project>
