@@ -26,7 +26,7 @@ namespace Stone.Transactions.API.Controllers
 
         public async Task<IActionResult> GetPagedTransactions([FromQuery] TransactionQueryParametersDTO queryParametersDTO)
         {
-            var validator = new TansactionQueryParametersDtoValidator();
+            var validator = new TransactionQueryParametersDtoValidator();
 
             var validatorResult = await validator.ValidateAsync(queryParametersDTO);
 
