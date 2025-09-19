@@ -1,7 +1,6 @@
 # Desafio ElasticSearch Stone
 
 
-
 ## Tier 0
 
 ### Diagrama Arquitetura
@@ -46,7 +45,49 @@ Descrição dos Cenários
 - Em caso de erro, a transação é abortada com AbortTransaction() e registrada no log.
 - Cada mensagem possui headers com informações de aplicação e correlationId.
 
+## Tier 2
 
+##### Consumer de Transações - Console App (Kafka Consumer)
+
+Este aplicativo de console é um consumer Kafka que consome mensagens de transações geradas pelo Producer, processa os dados em paralelo e persiste no Elasticsearch. Ele é ideal para cenários de ingestão em larga escala e processamento confiável de mensagens.
+
+##### Como Funciona
+
+O app se conecta a um tópico Kafka, consome batches de mensagens e processa cada batch em paralelo usando **Channels** e **Tasks**. Ele garante:
+
+- **Processamento em paralelo** com número configurável de canais (`NumberChannels`)
+- **Retry de operações críticas** usando Polly para Kafka e Elasticsearch
+- **Persistência confiável** no Elasticsearch
+- **Commit controlado** das mensagens Kafka
+- **Dead Letter Queue (DLQ)** para mensagens que falham
+
+
+##### Detalhes Consumer
+
+1. **Inicialização do Consumer**
+   - O app cria um Consumer Kafka com configurações de **Idempotência** e **Read Committed**.
+   - O Consumer se inscreve no tópico configurado (`TransactionConsumer`).
+
+2. **Leitura de mensagens do Kafka**
+   - As mensagens chegam em **batches JSON** contendo listas de `Transaction`.
+   - Cada batch é escrito em um **Channel** para processamento paralelo.
+
+3. **Processamento paralelo dos batches**
+   - Cada canal é processado por uma **Task separada** (`ProcessAndPersistBatchesToElasticAsync`).
+   - Cada batch é persistido no **Elasticsearch** em bulk (`bulkSize = 5000`).
+   - Se o Elasticsearch falhar, **Polly faz retry automático**.
+
+4. **Commit das mensagens Kafka**
+   - Somente após sucesso no Elasticsearch o Consumer **confirma o offset**.
+   - Se o processamento falhar de forma crítica, as mensagens vão para a **Dead Letter Queue (DLQ)**.
+
+5. **Notificação de erros críticos**
+   - Erros graves são registrados no log e podem disparar alertas (Teams, Slack, SNS, etc.) via método `NotifyTeam`.
+
+6. **Encerramento do Consumer**
+   - Quando o app é interrompido, o Channel é fechado e todas as Tasks aguardam finalizar.
+   - O Consumer fecha a conexão com Kafka de forma segura.
+   - 
 ## Tecnologias Usadas
 - **.NET** 
 - **Kafka**
