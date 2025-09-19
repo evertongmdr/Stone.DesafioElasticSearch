@@ -61,7 +61,18 @@ O app se conecta a um tópico Kafka, consome batches de mensagens e processa cad
 - **Commit controlado** das mensagens Kafka
 - **Dead Letter Queue (DLQ)** para mensagens que falham
 
+##### Escalabilidade Horizontal do Consumer
 
+O Consumer Kafka foi projetado para rodar múltiplas instâncias em paralelo, aproveitando o agrupamento de consumidores (GroupId) do Kafka. Isso significa que várias instâncias podem processar mensagens do mesmo tópico, dividindo as partições entre si.
+
+No caso:
+
+- Cada consumidor é registrado como um **HostedService** e pertence ao mesmo **GroupId Kafka**.
+-  O Kafka realiza load balancing automático:
+      - Cada partição do tópico é atribuída a apenas um consumidor dentro do grupo.
+      - Se houver mais consumidores que partições, alguns consumidores ficarão ociosos.
+      - Se houver menos consumidores que partições, alguns consumidores processarão múltiplas partições.
+   
 ##### Detalhes Consumer
 
 1. **Inicialização do Consumer**
@@ -87,7 +98,16 @@ O app se conecta a um tópico Kafka, consome batches de mensagens e processa cad
 6. **Encerramento do Consumer**
    - Quando o app é interrompido, o Channel é fechado e todas as Tasks aguardam finalizar.
    - O Consumer fecha a conexão com Kafka de forma segura.
-   - 
+  
+## Configurações Importantes
+
+| Configuração                       | Descrição                                                                                 |
+|-----------------------------------|-------------------------------------------------------------------------------------------|
+| `NumberChannels`                   | Número de canais paralelos para processamento dos batches. Ajustável conforme recursos do host. |
+| `ClientId / GroupId`               | Identificação do consumidor no cluster Kafka.                                             |
+| `EnableAutoCommit / EnableAutoOffsetStore` | O offset é controlado manualmente após persistência no Elasticsearch.               |
+| `IsolationLevel`                   | Garante leitura apenas de transações commitadas.                                         |
+
 ## Tecnologias Usadas
 - **.NET** 
 - **Kafka**
