@@ -9,9 +9,7 @@
 
 ### Definições Tiers
 
-#### Tier 1
-
-##### Gerador de Massa de Dados - Console App (Kafka Producer)
+#### Tier 1: Gerador de Massa de Dados - Console App (Kafka Producer)
 
 Este aplicativo de console é um producer Kafka que gera e envia grandes volumes de dados de transações para um cluster Kafka. Ele é ideal para testes de performance, escalabilidade e cenários de estresse, simulando diferentes níveis de carga no sistema.
 
@@ -45,9 +43,7 @@ Descrição dos Cenários
 - Em caso de erro, a transação é abortada com AbortTransaction() e registrada no log.
 - Cada mensagem possui headers com informações de aplicação e correlationId.
 
-## Tier 2
-
-##### Consumer de Transações - Console App (Kafka Consumer)
+### Tier 2: Consumer de Transações - Console App (Kafka Consumer)
 
 Este aplicativo de console é um consumer Kafka que consome mensagens de transações geradas pelo Producer, processa os dados em paralelo e persiste no Elasticsearch. Ele é ideal para cenários de ingestão em larga escala e processamento confiável de mensagens.
 
@@ -110,6 +106,45 @@ Poder analisar melhor através do [diagrama da arquitetura](#diagrama-arquitetur
 | `ClientId / GroupId`               | Identificação do consumidor no cluster Kafka.                                             |
 | `EnableAutoCommit / EnableAutoOffsetStore` | O offset é controlado manualmente após persistência no Elasticsearch.               |
 | `IsolationLevel`                   | Garante leitura apenas de transações commitadas.                                         |
+
+
+### Tier 3: API de Leitura (Transaction API)
+
+##### Visão Geral
+A API é responsável por fornecer acesso às transações persistidas no Elasticsearch.
+Ela utiliza o índice de leitura (transactions-read) para consultas e agregações, garantindo que a leitura não impacte a escrita.
+
+
+##### Política de Retenção (ILM)
+
+A API consulta dados em índices gerenciados por uma política ILM (transactions_index_policy), que segue as recomendações:
+- 85% das consultas são atendidas nos últimos 7 dias (fase Hot).
+- 99% das consultas são atendidas nos últimos 30 dias (fases Hot + Warm + Cold).
+- Os dados são mantidos por 12 meses, atendendo ao requisito de retenção.
+
+
+##### Endpoints Disponíveis
+
+| Método | Endpoint                       | Descrição                                                                 |
+|--------|--------------------------------|---------------------------------------------------------------------------|
+| GET    | `/transactions`                | Retorna transações paginadas por **clientId** e intervalo de datas         |
+| GET    | `/transactions/GetDailyTotals` | Retorna totais diários das transações, agrupados por tipo de transação     |
+
+## Estratégia de Indexação e Persistência no ElasticSerach
+
+A política ILM `transactions_index_policy` organiza os dados conforme a frequência de acesso e a retenção:
+
+| Cenário | Percentual de Consultas | Fase ILM | Estratégia |
+|---------|------------------------|----------|------------|
+| **C1 – Mais acessados** | 85% | Hot (0 a 7 dias) | Índices ativos para escrita e leitura. Rollover diário ou ao atingir 50GB. |
+| **C2 – Menos acessados** | 99% até 30 dias | Warm (7 a 30 dias) | Redução de shards, forcemerge para compactar em 1 segmento. Alocados em nós warm. |
+| **C3 – Raramente acessados** | Consultas acima de 30 dias | Cold (>30 dias) | Índices congelados (`freeze`). Alocados em nós cold para reduzir custo. |
+| **C4 – Dados expirados** | Retenção >12 meses | Delete (>12 meses) | Índices excluídos automaticamente. |
+
+💡 Observações:
+- Percentuais de consultas ajudam a decidir em qual fase os dados permanecem.  
+- A política garante **otimização de escrita/leitura**, **economia de recursos** e **retenção de 12 meses**.
+
 
 ## Tecnologias Usadas
 - **.NET** 
