@@ -81,14 +81,12 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
 
-  app-trasactions-producer:
+  app-transactions-producer:
+    image: stone/transactions-producer-app:latest
     build: 
       context: ../src
       dockerfile: ./Stone.Transactions.Producer/Dockerfile
-    container_name: trasactions-producer
-    ports:
-      - "5201:5201"
-      - "5202:5202"
+    container_name: transactions-producer
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -97,8 +95,7 @@ services:
       - kafka-broker-2
       - elasticsearch-node-1
       - elasticsearch-node-2
-    command: ["2"]
-    
+
 volumes:
   elasticsearch1_data:
   elasticsearch2_data:
