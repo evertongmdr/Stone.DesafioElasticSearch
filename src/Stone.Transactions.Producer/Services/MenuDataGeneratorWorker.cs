@@ -22,6 +22,10 @@ namespace Stone.Transactions.Producer.Services
 
         public async Task RunMenuDataGenerationLoopAsync()
         {
+            //caso esteja rodando em um container, pega o argumento da linha de comando
+            var args = Environment.GetCommandLineArgs();
+            string? choice = args.Length > 1 ? args[1] : null;
+
             DisplayDataGenerationMenu();
 
             var options = new Dictionary<string, (int batchSize, int maxBatchesPerSend, int delayMs)>
@@ -31,7 +35,19 @@ namespace Stone.Transactions.Producer.Services
                 { "3", (100, 10, 200) }       // Baixa carga (1k msgs por transação)
             };
 
-            var choice = Console.ReadLine();
+
+            if (!string.IsNullOrEmpty(choice))
+            {
+                //Aplicação rodando no container
+
+                Task.Delay(TimeSpan.FromMinutes(1));
+            }
+            else
+            {
+                // Aplicação rodando no console local.
+                DisplayDataGenerationMenu();
+                choice = Console.ReadLine();
+            }
 
             while (choice != "0")
             {
@@ -55,7 +71,7 @@ namespace Stone.Transactions.Producer.Services
                 }
                 catch (Exception ex)
                 {
-                    Console.Clear();
+                    //Console.Clear();
                     _logger.LogError($"Ocorreu um erro: {ex.Message}\n\n");
 
                     DisplayDataGenerationMenu();

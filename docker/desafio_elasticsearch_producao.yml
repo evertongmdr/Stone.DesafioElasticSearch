@@ -1,7 +1,4 @@
-version: '3.4'
-
 services:
-
   elasticsearch-node-1:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
     container_name: elasticsearch-node1
@@ -49,15 +46,12 @@ services:
     container_name: zookeeper
     ports:
       - "2181:2181"
-    depends_on:
-      - elasticsearch-node-1
 
   kafka-broker-1:
     image: confluentinc/cp-kafka:7.1.0
     container_name: kafka-desafio-elasticserach1
     depends_on:
       - zookeeper
-      - elasticsearch-node-1
     ports:
       - "9094:9094"
     environment:
@@ -75,7 +69,6 @@ services:
     container_name: kafka-desafio-elasticserach2
     depends_on:
       - zookeeper
-      - elasticsearch-node-1
     ports:
       - "9095:9095"
     environment:
@@ -88,6 +81,24 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
 
+  app-trasactions-producer:
+    build: 
+      context: ../src
+      dockerfile: ./Stone.Transactions.Producer/Dockerfile
+    container_name: trasactions-producer
+    ports:
+      - "5201:5201"
+      - "5202:5202"
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    depends_on:
+      - kafka-broker-1
+      - kafka-broker-2
+      - elasticsearch-node-1
+      - elasticsearch-node-2
+    command: ["2"]
+    
 volumes:
   elasticsearch1_data:
   elasticsearch2_data:
