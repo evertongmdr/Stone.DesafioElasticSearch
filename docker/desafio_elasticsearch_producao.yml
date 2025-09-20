@@ -49,7 +49,7 @@ services:
 
   kafka-broker-1:
     image: confluentinc/cp-kafka:7.1.0
-    container_name: kafka-desafio-elasticserach1
+    container_name: kafka-desafio-elasticsearch1
     depends_on:
       - zookeeper
     ports:
@@ -57,16 +57,18 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-desafio-elasticserach1:9092,PLAINTEXT_HOST://localhost:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-desafio-elasticsearch1:9092,PLAINTEXT_HOST://localhost:9094
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+    volumes:
+      - kafka1_data:/var/lib/kafka/data
 
   kafka-broker-2:
     image: confluentinc/cp-kafka:7.1.0
-    container_name: kafka-desafio-elasticserach2
+    container_name: kafka-desafio-elasticsearch2
     depends_on:
       - zookeeper
     ports:
@@ -74,28 +76,84 @@ services:
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-desafio-elasticserach2:9092,PLAINTEXT_HOST://localhost:9095
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-desafio-elasticsearch2:9092,PLAINTEXT_HOST://localhost:9095
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+    volumes:
+      - kafka2_data:/var/lib/kafka/data
+
+  infra-init:
+    container_name: infra-init
+    build:
+      context: ../infra
+      dockerfile: Dockerfile
+    depends_on:
+      - elasticsearch-node-1
+      - elasticsearch-node-2
+      - kafka-broker-1
+      - kafka-broker-2
+      
+    volumes:
+      - ../infra/scripts:/scripts
+      - ../infra/elasticsearch:/elasticsearch
+    entrypoint: ["bash", "/scripts/infra-setup.sh"]
 
   app-transactions-producer:
     image: stone/transactions-producer-app:latest
+    container_name: transactions-producer
     build: 
       context: ../src
       dockerfile: ./Stone.Transactions.Producer/Dockerfile
-    container_name: transactions-producer
     restart: always
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - DOTNET_ENVIRONMENT=Production
     depends_on:
-      - kafka-broker-1
-      - kafka-broker-2
-      - elasticsearch-node-1
-      - elasticsearch-node-2
+      - infra-init
 
+  app-transactions-consumer1:
+    image: stone/transactions-consumer1-app:latest
+    container_name: transactions-consumer1
+    build: 
+      context: ../src
+      dockerfile: ./Stone.Transactions.Consumer/Dockerfile
+    restart: always
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+      - CONTAINER_INSTANCE=container-1
+    depends_on:
+      - app-transactions-producer
+
+  app-transactions-consumer2:
+      image: stone/transactions-consumer2-app:latest
+      container_name: transactions-consumer2
+      build: 
+        context: ../src
+        dockerfile: ./Stone.Transactions.Consumer/Dockerfile
+      restart: always
+      environment:
+        - DOTNET_ENVIRONMENT=Production
+        - CONTAINER_INSTANCE=container-2
+      depends_on:
+        - app-transactions-producer
+
+  app-transactions-consumer3:
+      image: stone/transactions-consumer3-app:latest
+      container_name: transactions-consumer3
+      build: 
+        context: ../src
+        dockerfile: ./Stone.Transactions.Consumer/Dockerfile
+      restart: always
+      environment:
+        - DOTNET_ENVIRONMENT=Production
+        - CONTAINER_INSTANCE=container-3
+      depends_on:
+        - app-transactions-producer
+        
 volumes:
   elasticsearch1_data:
   elasticsearch2_data:
+  kafka1_data:
+  kafka2_data:

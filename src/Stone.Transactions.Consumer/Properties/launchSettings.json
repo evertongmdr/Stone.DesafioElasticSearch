@@ -4,7 +4,7 @@
     "Development": {
       "commandName": "Project",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "Development",
         "CONTAINER_INSTANCE": "container-1"
       }
     },

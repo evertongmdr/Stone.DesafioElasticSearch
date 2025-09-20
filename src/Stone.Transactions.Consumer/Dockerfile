@@ -1,27 +1,27 @@
-# Acesse https://aka.ms/customizecontainer para saber como personalizar seu contêiner de depuração e como o Visual Studio usa este Dockerfile para criar suas imagens para uma depuração mais rápida.
 
 # Esta fase é usada durante a execução no VS no modo rápido (Padrão para a configuração de Depuração)
-FROM mcr.microsoft.com/dotnet/runtime:9.0 AS base
-USER $APP_UID
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 
-
-# Esta fase é usada para compilar o projeto de serviço
+# Fase de build
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["src/Stone.Transactions.Consumer/Stone.Transactions.Consumer.csproj", "src/Stone.Transactions.Consumer/"]
-RUN dotnet restore "./src/Stone.Transactions.Consumer/Stone.Transactions.Consumer.csproj"
+
+# Copia apenas o csproj para otimizar restore
+COPY ["Stone.Transactions.Consumer/Stone.Transactions.Consumer.csproj", "Stone.Transactions.Consumer/"]
+RUN dotnet restore "Stone.Transactions.Consumer/Stone.Transactions.Consumer.csproj"
+
+# Copia todo o código
 COPY . .
-WORKDIR "/src/src/Stone.Transactions.Consumer"
-RUN dotnet build "./Stone.Transactions.Consumer.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "Stone.Transactions.Consumer"
+RUN dotnet build "Stone.Transactions.Consumer.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Esta fase é usada para publicar o projeto de serviço a ser copiado para a fase final
+# Fase de publish
 FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Stone.Transactions.Consumer.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "Stone.Transactions.Consumer.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# Esta fase é usada na produção ou quando executada no VS no modo normal (padrão quando não está usando a configuração de Depuração)
+# Fase final
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .

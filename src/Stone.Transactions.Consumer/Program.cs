@@ -27,7 +27,7 @@ await Host.CreateDefaultBuilder(args)
         {
             var consumerName = containerConfig.ConsumerNames[i];
 
-            services.AddHostedService(sp => new TransactionConsumer(
+            services.AddSingleton<IHostedService>(sp => new TransactionConsumer(
                 sp.GetRequiredService<IOptions<AppTransactionsConsumerSettings>>(),
                 sp.GetRequiredService<ILogger<TransactionConsumer>>(),
                 sp.GetRequiredService<ISearchEngine<Transaction>>(),

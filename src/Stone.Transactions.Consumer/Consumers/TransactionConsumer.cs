@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+using Elastic.Clients.Elasticsearch.TextStructure;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -21,7 +22,8 @@ namespace Stone.Transactions.Consumer.Consumers
         private readonly AppTransactionsConsumerSettings _settings;
         private readonly IConsumer<string, string> _consumer;
         private readonly ISearchEngine<Transaction> _elasticSearchService;
-        private readonly Channel<ConsumeBatch<Transaction>> _channel;
+        private readonly Channel<(string, ConsumeBatch<Transaction>)> _channel;
+        private readonly string _groupInstanceId;
 
 
         public TransactionConsumer(
@@ -34,12 +36,14 @@ namespace Stone.Transactions.Consumer.Consumers
             _logger = logger;
             _settings = settings.Value;
 
+             _groupInstanceId = $"transaction-consumer-{consumerName}";
+
             var config = new ConsumerConfig
             {
                 BootstrapServers = _settings.Kafka.BootstrapServers,
                 ClientId = $"transaction-consumer-app-{containerInstance}",
                 GroupId = "transaction-consumer-group-01",
-                GroupInstanceId = $"transaction-consumer-{consumerName}",
+                GroupInstanceId = _groupInstanceId,
                 AutoOffsetReset = AutoOffsetReset.Earliest,
                 EnablePartitionEof = true,
                 EnableAutoCommit = false,
@@ -51,22 +55,24 @@ namespace Stone.Transactions.Consumer.Consumers
 
             _elasticSearchService = elasticSearchService;
 
-            _channel = Channel.CreateBounded<ConsumeBatch<Transaction>>(new BoundedChannelOptions(20)
-            {
-                FullMode = BoundedChannelFullMode.Wait // bloqueia se estiver cheio
-            });
-
+            _channel = Channel.CreateBounded<(string GroupInstanceId, ConsumeBatch<Transaction> Batch)>(
+                new BoundedChannelOptions(20)
+                {
+                    FullMode = BoundedChannelFullMode.Wait // bloqueia se estiver cheio
+                }
+            );
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+
             var topic = _settings.Kafka.Topics.TransactionConsumer;
 
             try
             {
                 _consumer.Subscribe(topic);
 
-                _logger.LogInformation($"Consumer {_consumer.Name} iniciado no tópico {topic}");
+                _logger.LogInformation($"Consumer {_groupInstanceId} iniciado no tópico {topic}");
 
                 var channelProcessors = Enumerable.Range(0, NumberChannels)
                     .Select(_ => Task.Run(() => ProcessAndPersistBatchesToElasticAsync(stoppingToken)))
@@ -86,11 +92,11 @@ namespace Stone.Transactions.Consumer.Consumers
 
                         var transactions = JsonSerializer.Deserialize<List<Transaction>>(result.Message.Value);
 
-                        await _channel.Writer.WriteAsync(new ConsumeBatch<Transaction>
+                        await _channel.Writer.WriteAsync((_groupInstanceId,new ConsumeBatch<Transaction>
                         {
                             ConsumeResult = result,
                             Items = transactions ?? new List<Transaction>()
-                        }, stoppingToken);
+                        }), stoppingToken);
 
                     }
                     catch (Exception ex)
@@ -125,7 +131,7 @@ namespace Stone.Transactions.Consumer.Consumers
 
         private async Task ProcessAndPersistBatchesToElasticAsync(CancellationToken cancellationToken)
         {
-            await foreach (var batch in _channel.Reader.ReadAllAsync(cancellationToken))
+            await foreach (var (groupInstanceId, batch) in _channel.Reader.ReadAllAsync(cancellationToken))
             {
                 try
                 {
@@ -145,6 +151,8 @@ namespace Stone.Transactions.Consumer.Consumers
                     if (resultRetry.Outcome != OutcomeType.Failure)
                     {
                         _consumer.Commit(batch.ConsumeResult);
+                        _logger.LogInformation($"Consumer {groupInstanceId} envio {batch.Items.Count} para o ES");
+
                     }
                     else
                     {
