@@ -151,6 +151,22 @@ services:
         - CONTAINER_INSTANCE=container-3
       depends_on:
         - app-transactions-producer
+
+  api-transactions:
+        image: stone/transactions-api:latest
+        container_name: transactions-api
+        build: 
+            context: ../src
+            dockerfile: ./Stone.Transactions.API/Dockerfile
+        ports:
+            - "5201:5201"
+            - "5202:5202"
+        restart: always 
+        environment: 
+            - ASPNETCORE_ENVIRONMENT=Production
+            - ASPNETCORE_URLS=http://*:5201
+        depends_on:
+            - elasticsearch-node-1
         
 volumes:
   elasticsearch1_data:
