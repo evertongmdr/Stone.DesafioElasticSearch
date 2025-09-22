@@ -5,7 +5,7 @@
 
 ### Diagrama Arquitetura
 
-![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/diagrama-arquitetura.png)
+![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/diagrama-simples-arquitetura.png)
 
 ### Definições Tiers
 
@@ -21,6 +21,8 @@ Ao executar o aplicativo, você verá um menu interativo que permite escolher en
 Descrição dos Cenários
 
 ##### Menu Principal
+
+![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/terminal-producer.png)
 
 ##### Descrição dos Cenários
 
