@@ -207,13 +207,40 @@ Siga os passos abaixo:
 
    ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/console-produce-rodando.png)
 
-### 5) Lendo os dados do Kafka e indexando no ElasticSearch
+### 5) Acompanhar a execução dos Consumers
 
-Os Consumers já estão rodando e consumindo as mesagens e salvando no ElastiSearch para visualizar esse processo siga os passo abaixo
+#### (Opção 1) Via **Docker Desktop**
 
-1. Via Docker Desktop
-    ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/imagem-subindo-container.png)
-3. 
+Abra o Docker Desktop Escolha um dos três containers disponíveis:
+   - `transactions-consumer1`
+   - `transactions-consumer2`
+   - `transactions-consumer3`
+     
+   Em seguida, clique para abri-lo:
+
+   ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/imagem-subindo-container.png)
+
+   Nos logs do container, você poderá visualizar a quantidade de mensagens **consumidas** e **salvas no ElasticSearch**:
+
+   ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/log-docker-consumer.png)
+
+#### (Opção 2) Via **Docker Desktop**
+
+Abra **três janelas do Prompt de Comando** e execute os seguintes comandos;
+- docker logs -f --timestamps transactions-consumer1
+- docker logs -f --timestamps transactions-consumer2
+- docker logs -f --timestamps transactions-consumer3
+
+  ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/guias-console-cnosumer.png)
+
+  Você também conseguirá visualizar os logs em tempo real.
+  
+  ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/guias-console-consumer-rodando.png)
+  
+  
+
+
+   
 
  
    
