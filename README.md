@@ -184,8 +184,8 @@ Observações:
 
 ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/pasta-docker.png)
 
-#### 2) Abrir o terminal no respectivo local e exectuar o arquivo "arquivo-propostaseguro_producao" com o seguinte comando:<br>
-**"docker-compose -f propostaseguro_producao.yml up --build"**
+#### 2) Abrir o terminal no respectivo local e exectuar o arquivo "desafio_elasticsearch_producao.yml" com o seguinte comando:<br>
+**"docker-compose -f desafio_elasticsearch_producao.yml up --build"**
 
 ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/imagem-docker-compose.png)
 
