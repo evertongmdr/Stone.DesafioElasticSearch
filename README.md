@@ -236,11 +236,15 @@ Abra **três janelas do Prompt de Comando** e execute os seguintes comandos;
   Você também conseguirá visualizar os logs em tempo real.
   
   ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/guias-console-consumer-rodando.png)
-  
-  
 
 
-   
+### 6) Overview do Elasticsearch no Kibana
 
- 
-   
+Você pode acompanhar **dados, métricas e informações do Elasticsearch** diretamente pelo Kibana, acessando o endereço: "http://localhost:5601/"
+
+![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/kibana-overview-elasticsearch.png)
+
+## Contato e Suporte
+
+Fico à disposição para esclarecer qualquer dúvida ou avaliar detalhes do projeto.  
+Será um prazer conversar sobre qualquer ponto, arquitetura ou execução do sistema.
