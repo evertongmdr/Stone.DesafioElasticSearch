@@ -174,3 +174,37 @@ Observações:
 
 **Observação:**  
 - O Kafka e Elasticsearch estão configurados para suportar múltiplas instâncias do Consumer e do Producer, permitindo **escala horizontal** do processamento e das consultas.
+
+
+##  Instruções de build e execução
+
+### 1) Acesse a pasta "docker" que está na raiz do projeto.
+
+![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/pasta-docker.png)
+
+### 2) Abrir o terminal no respectivo local e exectuar o arquivo "arquivo-propostaseguro_producao" com o seguinte comando:<br>
+**"docker-compose -f propostaseguro_producao.yml up --build"**
+
+![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/imagem-docker-compose.png)
+
+![Descrição da imagem](documentos/prints/imagem-comando-docker-comopse.png)
+
+### 3) Após executar o comando
+A execução do projeto pode demorar um pouco (em torno de **6 minutos**), pois o Docker precisa baixar as imagens, construir o projeto e subir os containers. Durante esse processo, os serviços internos precisam ser inicializados e a configuração do Kafka e do ElasticSearch será aplicada. Quando tudo estiver concluído, o projeto estará disponível para testes.
+
+### 4) Enviar a massa de dados para o Kafka
+
+Siga os passos abaixo:
+
+1. Abra o terminal e execute os seguintes comandos:
+   - docker exec -it transactions-producer /bin/bash
+   - dotnet Stone.Transactions.Producer.dll
+       
+    ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/console-producer.png)
+
+   Será aberto um **console interativo**, onde você poderá escolher a opção de envio dos dados. Após selecionar a opção desejada, a massa de dados será enviada automaticamente para o **Kafka**.
+
+
+   ![Descrição da imagem](  https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/console-produce-rodando.png)
+ 
+   
