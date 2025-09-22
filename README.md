@@ -125,7 +125,12 @@ A API consulta dados em índices gerenciados por uma política ILM (transactions
 - Os dados são mantidos por 12 meses, atendendo ao requisito de retenção.
 
 
-#### Endpoints Disponíveis
+#### Swagger da API
+
+Você pode acessar a **documentação da API** pelo Swagger no seguinte endereço:
+"http://localhost:5201/swagger/index.html"
+
+![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/swagger-api-trasactions.png)
 
 | Método | Endpoint                       | Descrição                                                                 |
 |--------|--------------------------------|---------------------------------------------------------------------------|
@@ -161,8 +166,10 @@ Observações:
 - **Objetivo:** Garantir alta disponibilidade e load balancing entre produtores e consumidores.  
 - **Configuração resumida:**  
   - Cluster com múltiplos brokers.  
-  - Cada tópico pode ter múltiplas partições para paralelismo.  
-  - Grupo de consumidores garante divisão de partições e processamento paralelo.  
+  - Configuração do tópico **Transactions**
+     - Possui **12 partições**, permitindo paralelismo.
+     - Foram criados **12 consumidores**, distribuídos em **3 containers**, com 4 consumidores por container.
+     - Cada consumidor processa uma partição, garantindo que todas as partições sejam consumidas simultaneamente.
 
 #### Elasticsearch Cluster
 - **Número de nós:** 2 (`elasticsearch-node-1` e `elasticsearch-node-2`)  
@@ -245,6 +252,25 @@ Abra **três janelas do Prompt de Comando** e execute os seguintes comandos;
 Você pode acompanhar **dados, métricas e informações do Elasticsearch** diretamente pelo Kibana, acessando o endereço: "http://localhost:5601/"
 
 ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/kibana-overview-elasticsearch.png)
+
+***
+
+### Bibliotecas Utilizadas
+
+- **Confluent.Kafka**  
+  Biblioteca oficial para comunicação com Kafka, usada para produção e consumo de mensagens.
+
+- **Polly**  
+  Biblioteca de resiliência e políticas de retry, circuit breaker e fallback.
+
+- **Elastic.Clients.Elasticsearch**  
+  Cliente oficial do Elasticsearch para .NET, usado para indexação e consulta de dados.
+
+- **FluentValidation**  
+  Biblioteca para validação fluente de objetos, garantindo regras de negócio consistentes.
+
+- **Swashbuckle.AspNetCore**  
+  Integração Swagger/OpenAPI para gerar documentação e UI interativa da API.
 
 ***
 
