@@ -1,30 +1,27 @@
 # Desafio ElasticSearch Stone
 
 
-## Tier 0
+# Tier 0
 
-### Diagrama Arquitetura
+## Diagrama Arquitetura
 
 ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/diagrama-simples-arquitetura.png)
 
-### Definições Tiers
+## Definições Tiers
 ***
-#### Tier 1: Gerador de Massa de Dados - Console App (Kafka Producer)
+### Tier 1: Gerador de Massa de Dados - Console App (Kafka Producer)
 
 Este aplicativo de console é um producer Kafka que gera e envia grandes volumes de dados de transações para um cluster Kafka. Ele é ideal para testes de performance, escalabilidade e cenários de estresse, simulando diferentes níveis de carga no sistema.
 
-##### Como Funciona
+#### Como Funciona
 
 Ao executar o aplicativo, você verá um menu interativo que permite escolher entre diferentes cenários de geração de dados. Cada cenário envia um número específico de mensagens por transação, simulando diferentes níveis de carga no sistema.
 
-
-Descrição dos Cenários
-
-##### Menu Principal
+#### Menu Principal
 
 ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/terminal-producer.png)
 
-##### Descrição dos Cenários
+#### Descrição dos Cenários
 
 | Opção | Cenário       | Batch Size | Máx. Batches/Envio | Delay (ms) | Total de Mensagens |
 |-------|---------------|-----------|------------------|------------|------------------|
@@ -32,13 +29,13 @@ Descrição dos Cenários
 | 2     | Média Carga   | 1.000     | 50               | 250        | 50.000           |
 | 3     | Baixa Carga   | 100       | 10               | 200        | 1.000            |
 
-###### Explicação dos parâmetros
+#### Explicação dos parâmetros
 
 - **Batch Size:** Quantidade de mensagens geradas por lote.
 - **Máx. Batches/Envio:** Quantos lotes são enviados em sequência antes de aguardar o delay.
 - **Delay (ms):** Pausa entre envios de lotes, em milissegundos.
 
-##### Detalhes Producer
+#### Detalhes Producer
 - O producer Kafka é configurado com EnableIdempotence = true e Acks = All para garantir envio confiável.
 - Cada batch é enviado em paralelo usando Parallel.ForEachAsync.
 - As transações Kafka são iniciadas com BeginTransaction() e confirmadas com CommitTransaction().
@@ -51,7 +48,7 @@ Descrição dos Cenários
 
 Este aplicativo de console é um consumer Kafka que consome mensagens de transações geradas pelo Producer, processa os dados em paralelo e persiste no Elasticsearch. Ele é ideal para cenários de ingestão em larga escala e processamento confiável de mensagens.
 
-##### Como Funciona
+#### Como Funciona
 
 O app se conecta a um tópico Kafka, consome batches de mensagens e processa cada batch em paralelo usando **Channels** e **Tasks**. Ele garante:
 
@@ -61,7 +58,7 @@ O app se conecta a um tópico Kafka, consome batches de mensagens e processa cad
 - **Commit controlado** das mensagens Kafka
 - **Dead Letter Queue (DLQ)** para mensagens que falham
 
-##### Escalabilidade Horizontal do Consumer
+#### Escalabilidade Horizontal do Consumer
 
 O Consumer Kafka foi projetado para rodar múltiplas instâncias em paralelo, aproveitando o agrupamento de consumidores (GroupId) do Kafka. Isso significa que várias instâncias podem processar mensagens do mesmo tópico, dividindo as partições entre si.
 
@@ -76,7 +73,7 @@ No caso:
 Poder analisar melhor através do [diagrama da arquitetura](#diagrama-arquitetura).
 
    
-##### Detalhes Consumer
+#### Detalhes Consumer
 
 1. **Inicialização do Consumer**
    - O app cria um Consumer Kafka com configurações de **Idempotência** e **Read Committed**.
@@ -102,7 +99,7 @@ Poder analisar melhor através do [diagrama da arquitetura](#diagrama-arquitetur
    - Quando o app é interrompido, o Channel é fechado e todas as Tasks aguardam finalizar.
    - O Consumer fecha a conexão com Kafka de forma segura.
   
-## Configurações Importantes
+#### Configurações Importantes
 
 | Configuração                       | Descrição                                                                                 |
 |-----------------------------------|-------------------------------------------------------------------------------------------|
@@ -115,12 +112,12 @@ Poder analisar melhor através do [diagrama da arquitetura](#diagrama-arquitetur
 
 ### Tier 3: API de Leitura (Transaction API)
 
-##### Visão Geral
+#### Visão Geral
 A API é responsável por fornecer acesso às transações persistidas no Elasticsearch.
 Ela utiliza o índice de leitura (transactions-read) para consultas e agregações, garantindo que a leitura não impacte a escrita.
 
 
-##### Política de Retenção (ILM)
+#### Política de Retenção (ILM)
 
 A API consulta dados em índices gerenciados por uma política ILM (transactions_index_policy), que segue as recomendações:
 - 85% das consultas são atendidas nos últimos 7 dias (fase Hot).
@@ -128,14 +125,14 @@ A API consulta dados em índices gerenciados por uma política ILM (transactions
 - Os dados são mantidos por 12 meses, atendendo ao requisito de retenção.
 
 
-##### Endpoints Disponíveis
+#### Endpoints Disponíveis
 
 | Método | Endpoint                       | Descrição                                                                 |
 |--------|--------------------------------|---------------------------------------------------------------------------|
 | GET    | `/transactions`                | Retorna transações paginadas por **clientId** e intervalo de datas         |
 | GET    | `/transactions/GetDailyTotals` | Retorna totais diários das transações, agrupados por tipo de transação     |
 
-## Estratégia de Indexação e Persistência no ElasticSerach
+### Estratégia de Indexação e Persistência no ElasticSerach
 
 A política ILM `transactions_index_policy` organiza os dados conforme a frequência de acesso e a retenção:
 
@@ -157,9 +154,9 @@ Observações:
 
 ***
 
-## Infraestrutura
+### Infraestrutura
 
-### Kafka Cluster
+#### Kafka Cluster
 - **Número de nós:** 2  
 - **Objetivo:** Garantir alta disponibilidade e load balancing entre produtores e consumidores.  
 - **Configuração resumida:**  
@@ -167,7 +164,7 @@ Observações:
   - Cada tópico pode ter múltiplas partições para paralelismo.  
   - Grupo de consumidores garante divisão de partições e processamento paralelo.  
 
-### Elasticsearch Cluster
+#### Elasticsearch Cluster
 - **Número de nós:** 2 (`elasticsearch-node-1` e `elasticsearch-node-2`)  
 - **Objetivo:** Alta disponibilidade, replicação e tolerância a falhas.  
 - **Configuração resumida:**  
@@ -181,23 +178,23 @@ Observações:
 
 ***
 
-##  Instruções de build e execução
+###  Instruções de build e execução
 
-### 1) Acesse a pasta "docker" que está na raiz do projeto.
+#### 1) Acesse a pasta "docker" que está na raiz do projeto.
 
 ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/pasta-docker.png)
 
-### 2) Abrir o terminal no respectivo local e exectuar o arquivo "arquivo-propostaseguro_producao" com o seguinte comando:<br>
+#### 2) Abrir o terminal no respectivo local e exectuar o arquivo "arquivo-propostaseguro_producao" com o seguinte comando:<br>
 **"docker-compose -f propostaseguro_producao.yml up --build"**
 
 ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/imagem-docker-compose.png)
 
 ![Descrição da imagem](documentos/prints/imagem-comando-docker-comopse.png)
 
-### 3) Após executar o comando
+#### 3) Após executar o comando
 A execução do projeto pode demorar um pouco (em torno de **6 minutos**), pois o Docker precisa baixar as imagens, construir o projeto e subir os containers. Durante esse processo, os serviços internos precisam ser inicializados e a configuração do Kafka e do ElasticSearch será aplicada. Quando tudo estiver concluído, o projeto estará disponível para testes.
 
-### 4) Enviar a massa de dados para o Kafka
+#### 4) Enviar a massa de dados para o Kafka
 
 Siga os passos abaixo:
 
