@@ -7,6 +7,38 @@
 
 ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/diagrama-simples-arquitetura.png)
 
+## Overview da Arquitetura
+
+#### Producer
+Responsável por gerar e enviar dados para o Kafka.  
+Atua como ponto inicial do fluxo de dados.  
+
+##### Cluster Kafka
+Composto por múltiplos brokers (Broker 1, Broker 2) que armazenam e distribuem mensagens.  
+Garante resiliência e escalabilidade, permitindo múltiplos consumidores se conectarem de forma balanceada.  
+
+##### Consumers
+Todos os consumidores pertencem a **um único grupo**, mas estão distribuídos entre múltiplos containers (por exemplo, C1–C4, C5–C8, C9–C12) para permitir **load balancing**.  
+Cada consumidor lê mensagens do Kafka e processa de forma paralela, garantindo que a carga seja balanceada entre os containers.  
+
+##### DLQ (Dead Letter Queue)
+Armazena mensagens que não puderam ser processadas com sucesso pelos consumidores.  
+Garante que erros não interrompam o fluxo principal de dados.  
+
+##### Cluster Elasticsearch
+Recebe dados processados pelos consumidores para indexação e armazenamento.  
+Composto por múltiplos nós (Node 1, Node 2) para alta disponibilidade e escalabilidade.  
+Permite consultas rápidas e agregações eficientes.  
+
+##### API de Leitura
+Consulta dados armazenados no Elasticsearch.  
+
+##### Fluxo geral
+Dados são enviados pelo **Producer → Kafka → Consumers → Elasticsearch**.  
+Mensagens problemáticas vão para a **DLQ**.  
+A **API de leitura** consulta o Elasticsearch para fornecer resultados ao usuário ou serviço.
+
+
 ## Definições Tiers
 ***
 ### Tier 1: Gerador de Massa de Dados - Console App (Kafka Producer)
