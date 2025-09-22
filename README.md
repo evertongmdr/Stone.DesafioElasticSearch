@@ -205,6 +205,15 @@ Siga os passos abaixo:
    Será aberto um **console interativo**, onde você poderá escolher a opção de envio dos dados. Após selecionar a opção desejada, a massa de dados será enviada automaticamente para o **Kafka**.
 
 
-   ![Descrição da imagem](  https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/console-produce-rodando.png)
+   ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/console-produce-rodando.png)
+
+### 5) Lendo os dados do Kafka e indexando no ElasticSearch
+
+Os Consumers já estão rodando e consumindo as mesagens e salvando no ElastiSearch para visualizar esse processo siga os passo abaixo
+
+1. Via Docker Desktop
+    ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/imagem-subindo-container.png)
+3. 
+
  
    
