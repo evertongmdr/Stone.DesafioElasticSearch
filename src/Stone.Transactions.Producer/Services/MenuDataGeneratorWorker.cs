@@ -35,19 +35,7 @@ namespace Stone.Transactions.Producer.Services
                 { "3", (100, 10, 200) }       // Baixa carga (1k msgs por transação)
             };
 
-
-            if (!string.IsNullOrEmpty(choice))
-            {
-                //Aplicação rodando no container
-
-                Task.Delay(TimeSpan.FromMinutes(1));
-            }
-            else
-            {
-                // Aplicação rodando no console local.
-                DisplayDataGenerationMenu();
-                choice = Console.ReadLine();
-            }
+            choice = Console.ReadLine();
 
             while (choice != "0")
             {
@@ -80,8 +68,6 @@ namespace Stone.Transactions.Producer.Services
                 choice = Console.ReadLine();
             }
         }
-
-
 
         private void DisplayDataGenerationMenu()
         {

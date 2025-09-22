@@ -18,8 +18,7 @@ namespace Stone.Transactions.Producer.Services
     public class TransactionDataGenerator : ITransactionDataGenerator
     {
         const long TotalMessages = 122713632; // ~20GB de dados
-        //const long TotalMessages = 1000; // ~20GB de dados
-
+   
         private readonly ILogger<TransactionDataGenerator> _logger;
         private readonly ITransactionProducer _producer;
 
