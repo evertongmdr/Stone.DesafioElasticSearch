@@ -8,7 +8,7 @@
 ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/diagrama-simples-arquitetura.png)
 
 ### Definições Tiers
-
+***
 #### Tier 1: Gerador de Massa de Dados - Console App (Kafka Producer)
 
 Este aplicativo de console é um producer Kafka que gera e envia grandes volumes de dados de transações para um cluster Kafka. Ele é ideal para testes de performance, escalabilidade e cenários de estresse, simulando diferentes níveis de carga no sistema.
@@ -44,6 +44,8 @@ Descrição dos Cenários
 - As transações Kafka são iniciadas com BeginTransaction() e confirmadas com CommitTransaction().
 - Em caso de erro, a transação é abortada com AbortTransaction() e registrada no log.
 - Cada mensagem possui headers com informações de aplicação e correlationId.
+
+***
 
 ### Tier 2: Consumer de Transações - Console App (Kafka Consumer)
 
@@ -109,6 +111,7 @@ Poder analisar melhor através do [diagrama da arquitetura](#diagrama-arquitetur
 | `EnableAutoCommit / EnableAutoOffsetStore` | O offset é controlado manualmente após persistência no Elasticsearch.               |
 | `IsolationLevel`                   | Garante leitura apenas de transações commitadas.                                         |
 
+***
 
 ### Tier 3: API de Leitura (Transaction API)
 
@@ -152,6 +155,7 @@ Observações:
 - A política garante **otimização de escrita/leitura**, **economia de recursos** e **retenção de 12 meses**.
 - Os índices `transactions-write` e `transactions-read` seguem a política ILM **transactions_index_policy**, aplicando automaticamente as fases Hot, Warm, Cold e Delete.
 
+***
 
 ## Infraestrutura
 
@@ -175,6 +179,7 @@ Observações:
 **Observação:**  
 - O Kafka e Elasticsearch estão configurados para suportar múltiplas instâncias do Consumer e do Producer, permitindo **escala horizontal** do processamento e das consultas.
 
+***
 
 ##  Instruções de build e execução
 
@@ -243,6 +248,8 @@ Abra **três janelas do Prompt de Comando** e execute os seguintes comandos;
 Você pode acompanhar **dados, métricas e informações do Elasticsearch** diretamente pelo Kibana, acessando o endereço: "http://localhost:5601/"
 
 ![Descrição da imagem](https://github.com/evertongmdr/Stone.DesafioElasticSearch/blob/master/documentos/prints/kibana-overview-elasticsearch.png)
+
+***
 
 ## Contato e Suporte
 
