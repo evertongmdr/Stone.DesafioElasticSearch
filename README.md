@@ -104,10 +104,19 @@ Para garantir **alta disponibilidade** e melhor utilização das partições, fo
 - Cada consumidor é registrado como um HostedService dentro do container.  
 - O Kafka realiza **load balancing automático das partições** entre os consumidores do mesmo GroupId.
 
+Além disso, dentro de cada consumer, aplicamos **concorrência interna via Worker Pool** utilizando **Channels**:  
+- As mensagens consumidas são distribuídas entre múltiplos **workers assíncronos** para processamento paralelo no Elasticsearch.  
+- Isso permite que cada consumer aproveite **paralelismo interno**, aumentando a taxa de processamento sem criar novos consumers Kafka.
+
+Essa arquitetura combina **escalabilidade horizontal** e **paralelismo interno**, configurando um **paralelismo em dois níveis**:  
+1. **Nível macro** – múltiplos consumers Kafka distribuídos em containers (escala horizontal).  
+2. **Nível micro** – workers internos processando mensagens em paralelo dentro de cada consumer.
+
 Essa configuração garante:  
 - Redundância em caso de falha de algum container ou consumidor.  
 - Processamento paralelo otimizado, evitando ociosidade.  
 - Escalabilidade fácil: basta adicionar novos containers ou consumidores ao grupo.
+
 
 
  
