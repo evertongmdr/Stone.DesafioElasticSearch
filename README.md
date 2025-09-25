@@ -63,8 +63,8 @@ Ao executar o aplicativo, você verá um menu interativo que permite escolher en
 
 #### Explicação dos parâmetros
 
-- **Batch Size:** Quantidade de mensagens geradas por lote.
-- **Máx. Batches/Envio:** Quantos lotes são enviados em sequência antes de aguardar o delay.
+- **Batch Size:** Quantidade de mensagens geradas por cada lote.
+- **Máx. Batches/Envio:** Número máximo de lotes enviados em sequência antes de pausar.
 - **Delay (ms):** Pausa entre envios de lotes, em milissegundos.
 
 #### Detalhes Producer
@@ -73,6 +73,11 @@ Ao executar o aplicativo, você verá um menu interativo que permite escolher en
 - As transações Kafka são iniciadas com BeginTransaction() e confirmadas com CommitTransaction().
 - Em caso de erro, a transação é abortada com AbortTransaction() e registrada no log.
 - Cada mensagem possui headers com informações de aplicação e correlationId.
+
+#### Por que esse Design do Tier 1?
+
+A ideia de estruturar o Tier 1 dessa forma foi permitir que a solução conseguisse lidar com até **20GB de dados em diferentes padrões de carga**.
+Isso cobre desde cenários de volume muito alto em curtos intervalos, passando por cargas médias em períodos regulares, até fluxos mais distribuídos ao longo do dia.
 
 ***
 
