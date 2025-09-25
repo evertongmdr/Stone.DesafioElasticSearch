@@ -95,17 +95,21 @@ O app se conecta a um tópico Kafka, consome batches de mensagens e processa cad
 - **Commit controlado** das mensagens Kafka
 - **Dead Letter Queue (DLQ)** para mensagens que falham
 
-#### Escalabilidade Horizontal do Consumer
+#### Escalabilidade Horizontal e Alta Disponibilidade do Consumer
 
-O Consumer Kafka foi projetado para rodar múltiplas instâncias em paralelo, aproveitando o agrupamento de consumidores (GroupId) do Kafka. Isso significa que várias instâncias podem processar mensagens do mesmo tópico, dividindo as partições entre si.
+O Consumer Kafka foi projetado para rodar múltiplas instâncias em paralelo, aproveitando o agrupamento de consumidores (**GroupId**) do Kafka. Isso permite que várias instâncias processem mensagens do mesmo tópico, dividindo as partições entre si.
 
-No caso:
+Para garantir **alta disponibilidade** e melhor utilização das partições, foram criados **12 consumidores distribuídos em 3 containers**, com **4 consumidores por container**, todos pertencentes ao mesmo GroupId.  
 
-- Cada consumidor é registrado como um **HostedService** e pertence ao mesmo **GroupId Kafka**.
--  O Kafka realiza load balancing automático:
-      - Cada partição do tópico é atribuída a apenas um consumidor dentro do grupo.
-      - Se houver mais consumidores que partições, alguns consumidores ficarão ociosos.
-      - Se houver menos consumidores que partições, alguns consumidores processarão múltiplas partições.
+- Cada consumidor é registrado como um HostedService dentro do container.  
+- O Kafka realiza **load balancing automático das partições** entre os consumidores do mesmo GroupId.
+
+Essa configuração garante:  
+- Redundância em caso de falha de algum container ou consumidor.  
+- Processamento paralelo otimizado, evitando ociosidade.  
+- Escalabilidade fácil: basta adicionar novos containers ou consumidores ao grupo.
+
+
  
 Poder analisar melhor através do [diagrama da arquitetura](#diagrama-arquitetura).
 
